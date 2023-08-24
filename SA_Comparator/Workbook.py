@@ -1,7 +1,7 @@
 import openpyxl
 from openpyxl.styles import PatternFill, Font, Color
 
-def Create_Sheet_Type1(datas,table,header=[]):
+def Create_Sheet_Type1(results,table,header=[]):
     
     # Create a new Excel workbook or open an existing one
     try:
@@ -17,42 +17,56 @@ def Create_Sheet_Type1(datas,table,header=[]):
     else:
         sheet = workbook.create_sheet(table)
         
-
     Create_Header(sheet,header)
     
-    # Fill Data missmatch 
-    for no,data in enumerate(datas, start=1):
+    Partition_Fill('Data Chaned',sheet)
+    Text_Fill(results[0],sheet)
+    Partition_Fill('Data Removed',sheet)
+    Text_Fill(results[1],sheet)
+    Partition_Fill('Data Added',sheet)
+    Text_Fill(results[2],sheet)
+
+    Adjust_Column(sheet)
+    # Save the workbook to a file
+    workbook.save('D:\SA Comparator\Result.xlsx')
+
+def Text_Fill(results,sheet):
+    
+    if len(results) == 0:
+        sheet.cell(row=sheet.max_row + 2, column=1).value = "None!!"
+        return
+
+    for no,data in enumerate(results, start=1):
         row_index = sheet.max_row + 1
         if no%2 == 0:
-            for i in range(max(len(datas[no-2]),len(data))):
+            for i in range(max(len(results[no-2]),len(data))):
                     row_color = sheet.cell(row=row_index, column=i+1)
                     row_color.fill = PatternFill(start_color="CCFFFF", end_color="CCFFFF", fill_type="solid")
         for col_idx, value in enumerate(data, start=1):
             cell = sheet.cell(row=row_index, column=col_idx)
             cell.value = value
-            if no%2 == 0:               
-                for i, (elem1, elem2) in enumerate(zip(datas[no-2], data)):                 
+            if no%2 == 0 and results[no-2][0] != data[0]:               
+                for i, (elem1, elem2) in enumerate(zip(results[no-2], data)):                 
                     if elem1 != elem2 and i > 1: 
                         cell = sheet.cell(row=row_index, column=i+1)
                         cell.font = Font(color=Color(rgb="FF0000"))
-                
-    Adjust_Column(sheet)
-    # Save the workbook to a file
-    workbook.save('D:\SA Comparator\Result.xlsx')
 
-def Create_Sheet_Type2(datas,table,header=[]):
+def Partition_Fill(text,sheet):
+    sheet.cell(row=sheet.max_row + 2, column=1).value = text
+    sheet.cell(row=sheet.max_row, column=1).fill = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")
+
+def Create_Sheet_Type2(results,table,header=[]):
     
-    #header = ['A','b','c','d']
     # Load the existing workbook
     workbook = openpyxl.load_workbook('D:\SA Comparator\Result.xlsx')
 
-    # Create a new sheet (Sheet2)
+    # Create a new sheet
     sheet = workbook.create_sheet(title=table)
 
     Create_Header(sheet,header)
 
     # Fill Data missmatch
-    for data in datas:
+    for data in results:
         row_index = sheet.max_row + 1
         for col_idx, value in enumerate(data, start=1):
             cell = sheet.cell(row=row_index, column=col_idx)

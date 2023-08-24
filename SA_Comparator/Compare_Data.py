@@ -1,63 +1,51 @@
 from Converter import *
-import datetime
 
 def CompareBySysid(DB1,DB2):
-    """Compare database1 and database2
+    """Compare database1 and database2 from dictionary type
 
     Args:
-        DB1 (_type_): _description_
-        DB2 (_type_): _description_
+        DB1 (dictionary): table data from database1
+        DB2 (dictionary): table data from database2
 
     Returns:
-        _type_: _description_
+        list: result from comparation
     """
-    result = []
+    result_changed = []
+    result_removed = []
+    result_added = []
     
     for key in DB1:
         if key in DB2:            
             if DB1[key] != DB2[key]:
-                result.append(['DB1'] + [key] + list(DB1[key]))
-                result.append(['DB2'] + [key] + list(DB2[key]))
-                
-                # Create and write in LOG1.txt
-                #with open('D:\SA Comparator\Output\LOG1.txt', 'a') as LOG1:
-                #    current_date = datetime.datetime.now()
-                #    LOG1.write(f'DB1:{key} | {DB1.sysobj[key][1:]}\n') 
-                #    LOG1.write(f'DB2:{key} | {DB2.sysobj[key][1:]}\n')
-                #    LOG1.write('--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n')
-                
-                # add miss match data to result list
-                
+                result_changed.append(['DB1'] + [key] + list(DB1[key]))
+                result_changed.append(['DB2'] + [key] + list(DB2[key]))
             continue
         
         else:
-            result.append(['DB1'] + [key] + list(DB1[key]))
-            result.append(['DB2'])
-
-            #with open('D:\SA Comparator\Output\LOG2.txt', 'a') as LOG2:
-            #    CompareBySysname(DB1[key][7],DB2)
-            #    LOG2.write(f'{key} | {DB1[key][7]} exist in Database 1 not in Database 2\n')
+            result_removed.append(['DB1'] + [key] + list(DB1[key]))
     
     for key in DB2:
         if key in DB1:
             continue
-        else:
-            #with open('D:\SA Comparator\Output\LOG2.txt', 'a') as LOG2:
-            #    CompareBySysname(DB2[key][7],DB1)
-            #    LOG2.write(f'{key} | {DB2[key][7]} exist in Database 2 not in Database 1\n')
-            
-            result.append(['DB1'])
-            result.append(['DB2'] + [key] + list(DB2[key]))
-    return result
+        else: 
+            result_added.append(['DB2'] + [key] + list(DB2[key]))
+    return result_changed,result_removed,result_added
 
 def CompareBySysname(target_value,DB):
     for key,values in DB.items():
         if target_value == values[7]:
             print(f'{values[7]} : {target_value}')
 
-
 def Compare_table(DB1,DB2):
+    """Compare database1 and database2 from list type
 
+    Args:
+        DB1 (list): table data from database1
+        DB2 (list): table data from database2
+
+    Returns:
+        list: result from comparation
+    """
     result = []
 
     for data in DB1:

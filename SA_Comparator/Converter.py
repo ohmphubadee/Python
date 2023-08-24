@@ -1,20 +1,44 @@
+import os
 from DB_Connect import RunQuery
-from utils import Trace
+from SQL_Command import *
 
 class Converter():
+    # don't have primary key
+    table_type1 = ['actions','adjtypes','attribute','cond','crosref','crossev','dyndata','ecgrp','ecgrpuse','evconv','evsim','extitems','extsysif','hierarchytypes','nameparts','pretests','propmap',
+                   'simpretests','spreading','tabdescr','tabgrp','texts','utcdiff','valueset','valuetext','columns','tables','users','hierarchy']
+
+    # have primary key
+    table_type2 = ['adjacency','applmenu','automaton','cmd','cmdresp','cmdset','cmdstruct','cmdtypegrp','dirty','dynprop','evcond','event','measure','msgtype','objtype','objtypegrp',
+                   'operator','opernote','pattern','profileitem','request','route2','scale','site','sound','soundalarmmasks','state','sysobj','sysvalues','track','train','vehicle','viewrects']
+    
+    # Difine path of Table_List.txt
+    #table_list_path = os.path.join(os.getcwd(), 'Result.xlsx')
+    table_list_path = 'D:\SA Comparator\Table_List.txt'
+
+    #tables = ['sysobj','hierarchy','actions','cmd','track','texts']
+
     def __init__(self,DSN):
         """Create repository for each query
 
         Args:
             DSN (string): Server's name
-        """  
-        self.Read_BySysid(DSN,'SELECT SYSID,VERSIONNO,OBJNO,BLCKS,STRUCTYPE,OBJTYPENO,STATICBITS,INITSTAT,SYSNAME,ABBRNAME,TAG,DELFLAG,ACTMASK1,ACTMASK2,AUTHMASK1,AUTHMASK2,VALIDITY,COMMENTW,OPERNAMEW FROM sysobj',"sysobj")
-        self.Read_BySysid(DSN,"SELECT hierarchy.SYSID, Child.SYSNAME, hierarchy.MASTERID, Master.SYSNAME, hierarchy.HIERARCHYTYPE, hierarchy.VERSIONNO, hierarchy.SEQNO FROM hierarchy JOIN sysobj as Child ON Child.SYSID = hierarchy.SYSID JOIN sysobj as Master ON Master.SYSID = hierarchy.MASTERID","hierarchy")
-        self.Read_Table(DSN,"SELECT * FROM actions",'actions')
-        self.Read_BySysid(DSN,"SELECT * FROM cmd",'cmd')
-        self.Read_Table(DSN,"SELECT * FROM evsim",'evsim')
-        self.Read_BySysid(DSN,"SELECT track.SYSID, track_name.SYSNAME, track.VERSIONNO, track.HOSTSYSID, edge.SYSNAME, track.LENGTH, track.MAXSPEED, track.DISTANCE1, track.DISTANCE2, track.SEQNO FROM track JOIN sysobj as track_name ON track_name.SYSID = track.SYSID JOIN sysobj as edge ON edge.SYSID = track.HOSTSYSID", "track")
+        """
+        self.tables = self.Read_Table_List(self.table_list_path)
 
+        for table in self.tables:
+            if table in self.table_type2:
+                query = Get_query(table)
+                if query == None:
+                    query = f'SELECT * FROM {table}'
+                self.Read_BySysid(DSN,query,table)
+            elif table in self.table_type1:
+                query = Get_query(table)
+                if query == None:
+                    query = f'SELECT * FROM {table}'
+                self.Read_Table(DSN,query,table)
+            else:
+                print(f'{table} table not exist')
+        
     # Read data from table to dictionary
     def Read_BySysid(self,DSN,query,table):
         """Create list, read database and store data to dictionary
@@ -24,18 +48,21 @@ class Converter():
             query (string): SQL Command
             table (string): table name
         """
-        setattr(self, table, {})     
+        
+        setattr(self, table, {})  
         crsr = RunQuery(query,DSN)
         rows = crsr.fetchall()
         for row in rows:
             getattr(self, table)[row[0]] = row[1:]
-        setattr(self, table, dict(sorted(getattr(self, table).items())))
+        setattr(self, table, dict(sorted(getattr(self, table).items())))   
     
     # Read Column name from table but not work for IBM solid
-    def Read_header(self,table,DSN):
-        query = f'DESCRIBE TABLE {table} RAW'
+    def Read_header(DSN,table):
+        exclude_values = ['CREATED', 'UPTIMEID', 'MODIFIED']
+        query = f"SELECT COLUMN_NAME FROM columns WHERE TABLE_NAME = '{table.upper()}'"
         header_q = RunQuery(query,DSN)       
         header = header_q.fetchall()
+        header = [item[0] for item in header if item[0] not in exclude_values]
         return header
     
     # Read data from table to list
@@ -52,3 +79,14 @@ class Converter():
         rows = crsr.fetchall()
         setattr(self, table, rows)
 
+    # Read table want to compare from Table_List.txt
+    def Read_Table_List(self,table_list_path): 
+        try:
+            with open(table_list_path, 'r') as file:
+                content = file.read().split(',')
+        except FileNotFoundError:
+            print(f"File '{table_list_path}' not found.")
+        except Exception as e:
+            print("An error occurred:", e)
+        
+        return content

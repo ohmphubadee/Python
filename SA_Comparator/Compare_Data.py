@@ -1,4 +1,5 @@
 from Converter import *
+from Workbook import *
 
 def CompareBySysid(DB1,DB2):
     """Compare database1 and database2 from dictionary type
@@ -29,6 +30,7 @@ def CompareBySysid(DB1,DB2):
             continue
         else: 
             result_added.append(['DB2'] + [key] + list(DB2[key]))
+    
     return result_changed,result_removed,result_added
 
 def CompareBySysname(target_value,DB):
@@ -61,4 +63,5 @@ def Compare_table(DB1,DB2):
         else:
             result.append(list(data))
             result[-1].append('Exist in Database2 not Database1')
-    return result       
+
+    return result

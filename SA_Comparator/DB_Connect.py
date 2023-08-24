@@ -30,6 +30,9 @@ def RunQuery(select,DSN):
         crsr = OpenDBConnection(DSN)
         crsr = crsr.cursor()
         crsr.execute(select)
+
+    except:
+            print("SQL command error")
     
     finally:
         return crsr

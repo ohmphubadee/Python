@@ -54,14 +54,14 @@ def Compare_table(DB1,DB2):
         if data in DB2:
             continue
         else:
-            result.append(list(data))
+            result.append(['DB1'] + list(data))
             result[-1].append('Exist in Database1 not Database2')
 
     for data in DB2:
         if data in DB1:
             continue
         else:
-            result.append(list(data))
+            result.append(['DB2'] + list(data))
             result[-1].append('Exist in Database2 not Database1')
 
     return result

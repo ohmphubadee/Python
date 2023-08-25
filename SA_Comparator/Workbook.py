@@ -6,14 +6,18 @@ from openpyxl.styles import PatternFill, Font, Color
 current_path = os.getcwd()
 
 def Create_Sheet_Type1(results,table,header=[]):
-    
+
     # Create a new Excel workbook or open an existing one
     try:
         #workbook = openpyxl.load_workbook(os.path.join(current_path, 'Result.xlsx'))
         workbook = openpyxl.load_workbook('D:\SA Comparator\Result.xlsx')
     except FileNotFoundError:
         workbook = openpyxl.Workbook()
-        workbook.active.title = table
+        workbook.active.title = "Summary"
+        Create_Header(workbook.active,['Summary','Total'])
+
+    if all(len(result) == 0 for result in results):
+        return
     
     # Create or get the desired worksheet based on the sheet number
     
@@ -32,6 +36,8 @@ def Create_Sheet_Type1(results,table,header=[]):
     Text_Fill(results[2],sheet)
 
     Adjust_Column(sheet)
+
+    Fill_Summary(results,table,workbook)
 
     # Save the workbook to a file
     #workbook.save(os.path.join(current_path, 'Result.xlsx'))
@@ -63,10 +69,18 @@ def Partition_Fill(text,sheet):
     sheet.cell(row=sheet.max_row, column=1).fill = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")
 
 def Create_Sheet_Type2(results,table,header=[]):
-    
-    # Load the existing workbook
-    #workbook = openpyxl.load_workbook(os.path.join(current_path, 'Result.xlsx'))
-    workbook = openpyxl.load_workbook('D:\SA Comparator\Result.xlsx')
+
+    # Create a new Excel workbook or open an existing one
+    try:
+        #workbook = openpyxl.load_workbook(os.path.join(current_path, 'Result.xlsx'))
+        workbook = openpyxl.load_workbook('D:\SA Comparator\Result.xlsx')
+    except FileNotFoundError:
+        workbook = openpyxl.Workbook()
+        workbook.active.title = "Summary"
+        Create_Header(workbook.active,['Summary','Total'])
+
+    if len(results) == 0:
+        return
 
     # Create a new sheet
     sheet = workbook.create_sheet(title=table)
@@ -85,11 +99,12 @@ def Create_Sheet_Type2(results,table,header=[]):
             cell = sheet.cell(row=row_index, column=col_idx)
             cell.value = value
     
-    if len(results) == 0:
-        sheet.cell(row=sheet.max_row + 2, column=1).value = "None!!"
+    
 
     Adjust_Column(sheet)
     
+    Fill_Summary(results,table,workbook)
+
     #workbook.save(os.path.join(current_path, 'Result.xlsx'))
     workbook.save('D:\SA Comparator\Result.xlsx')
 
@@ -116,3 +131,38 @@ def Create_Header(sheet,header):
         cell = sheet.cell(row=1, column=col_idx)
         cell.fill = PatternFill(start_color="3399FF", end_color="3399FF", fill_type="solid")
         cell.value = head
+
+def Fill_Summary(results,table,workbook):
+    
+    sheet = workbook['Summary']
+    if all(len(result) == 0 for result in results):
+        return
+    
+    if isinstance(results[0],list) and len(results[0]) > 0:
+        if isinstance(results[0][0],list):          
+            cell = sheet.cell(row=sheet.max_row + 2, column=1)
+            cell.fill = PatternFill(start_color="33FF33", end_color="33FF33", fill_type="solid")
+            cell.value = table
+            cell = sheet.cell(row=sheet.max_row + 1, column=1)
+            cell.value = 'Data Changed'
+            cell = sheet.cell(row=sheet.max_row, column=2)
+            cell.value = len(results[0])
+            cell = sheet.cell(row=sheet.max_row + 1, column=1)
+            cell.value = 'Data Removed'
+            cell = sheet.cell(row=sheet.max_row, column=2)
+            cell.value = len(results[1])
+            cell = sheet.cell(row=sheet.max_row + 1, column=1)
+            cell.value = 'Data Added'
+            cell = sheet.cell(row=sheet.max_row, column=2)
+            cell.value = len(results[2])
+
+        else:
+            cell = sheet.cell(row=sheet.max_row + 2, column=1)
+            cell.fill = PatternFill(start_color="33FF33", end_color="33FF33", fill_type="solid")
+            cell.value = table
+            cell = sheet.cell(row=sheet.max_row + 1, column=1)
+            cell.value = 'Data missmatch'
+            cell = sheet.cell(row=sheet.max_row, column=2)
+            cell.value = len(results)
+
+    Adjust_Column(sheet)

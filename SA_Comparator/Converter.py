@@ -5,7 +5,7 @@ from SQL_Command import *
 class Converter():
     # don't have primary key
     table_type1 = ['actions','adjtypes','attribute','cond','crosref','crossev','dyndata','ecgrp','ecgrpuse','evconv','evsim','extitems','extsysif','hierarchytypes','nameparts','pretests','propmap',
-                   'simpretests','spreading','tabdescr','tabgrp','texts','utcdiff','valueset','valuetext','columns','tables','users','hierarchy']
+                   'simpretests','spreading','tabdescr','tabgrp','texts','utcdiff','valueset','valuetext','users','hierarchy']
 
     # have primary key
     table_type2 = ['adjacency','applmenu','automaton','cmd','cmdresp','cmdset','cmdstruct','cmdtypegrp','dirty','dynprop','evcond','event','measure','msgtype','objtype','objtypegrp',
@@ -23,7 +23,7 @@ class Converter():
         Args:
             DSN (string): Server's name
         """
-        self.tables = self.Read_Table_List(self.table_list_path)
+        self.Read_Table_List(self.table_list_path)
 
         for table in self.tables:
             if table in self.table_type2:
@@ -84,9 +84,14 @@ class Converter():
         try:
             with open(table_list_path, 'r') as file:
                 content = file.read().split(',')
+                if content == ['']:
+                    content = self.table_type1 + self.table_type2
         except FileNotFoundError:
             print(f"File '{table_list_path}' not found.")
+            content = self.table_type1 + self.table_type2
         except Exception as e:
             print("An error occurred:", e)
+            content = self.table_type1 + self.table_type2
         
-        return content
+        self.tables = content
+        

@@ -24,6 +24,7 @@ for table in DB1.tables:
         result = Compare_table(getattr(DB1,table),getattr(DB2,table))
         header = Converter.Read_header(DSN1,table)
         header.insert(0,'Database')
+        header.append('Comment')
         Create_Sheet_Type2(result,table,header)
 
 print("Done!!")

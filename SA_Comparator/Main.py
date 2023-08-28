@@ -5,6 +5,9 @@ from SQL_Command import *
 
 defult_header = ['Column1','Column2','Column3','Column4','Column5','Column6','Column7','Column8','Column9','Column10','Column11','Column12','Column13','Column14','Column15', 'Column16','Column17','Column18','Column19','Column20']
 
+server_1 = input("First server name: ")
+server_2 = input("Second server's name: ")
+
 DSN1 = 'DSN=MY-SERVER;UID=dba;PWD=dba'
 DSN2 = 'DSN=SERVER1;UID=dba;PWD=dba'
 
